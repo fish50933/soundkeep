@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>聲趣 SoundKeep - 上傳音頻卡片</title>
+</head>
+<body>
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #f0f2f5;
+    }
+  
+    h1 {
+      margin-bottom: 20px;
+      color: #333;
+    }
+  
+    form {
+      background-color: #ffffff;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      width: 300px;
+    }
+  
+    label {
+      font-weight: bold;
+      display: block;
+      margin-bottom: 6px;
+      color: #555;
+    }
+  
+    input[type="file"],
+    input[type="password"],
+    textarea {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 16px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      box-sizing: border-box;
+    }
+  
+    button {
+      width: 100%;
+      background-color: #4CAF50;
+      color: white;
+      padding: 10px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+  
+    button:hover {
+      background-color: #45a049;
+    }
+  </style>
+  
+  <h1>聲趣 SoundKeep｜上傳卡片內容</h1>
+  
+  <form id="uploadForm">
+    <div>
+      <label for="audioFile">音頻檔案（必填）</label>
+      <input type="file" id="audioFile" accept="audio/*" required />
+    </div>
+  
+    <div>
+      <label for="blessingMessage">祝福語（必填）</label>
+      <textarea id="blessingMessage" rows="4" placeholder="寫下你的祝福..." required></textarea>
+    </div>
+  
+    <div>
+      <label for="cardPassword">設定密碼（必填）</label>
+      <input type="password" id="cardPassword" placeholder="密碼" required />
+    </div>
+  
+    <button type="submit">送出上傳</button>
+  </form>
+  
+  <script type="module" src="./upload.js"></script>
+  
+</body>
+</html>
