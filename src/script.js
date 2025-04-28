@@ -9,10 +9,11 @@ const firebaseConfig = {
   authDomain: "soundkeep-79219.firebaseapp.com",
   databaseURL: "https://soundkeep-79219-default-rtdb.asia-southeast1.firebasedatabase.app",
   projectId: "soundkeep-79219",
-  storageBucket: "soundkeep-79219.firebasestorage.app",
+  storageBucket: "soundkeep-79219.appspot.com",  // ← 這裡
   messagingSenderId: "239015232427",
   appId: "1:239015232427:web:9134721712ab88c4c548ee"
 };
+
 
 // 初始化 Firebase
 const app = initializeApp(firebaseConfig);
