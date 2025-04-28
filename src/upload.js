@@ -10,15 +10,14 @@ const firebaseConfig = {
   authDomain: "soundkeep-79219.firebaseapp.com",
   databaseURL: "https://soundkeep-79219-default-rtdb.asia-southeast1.firebasedatabase.app",
   projectId: "soundkeep-79219",
-  storageBucket: "soundkeep-79219.appspot.com",  // ← 這邊我已經幫你修正了喔
+  storageBucket: "soundkeep-79219.appspot.com",
   messagingSenderId: "239015232427",
   appId: "1:239015232427:web:9134721712ab88c4c548ee"
 };
 
-// 初始化 Firebase
-const app = initializeApp(firebaseConfig);
-const storage = getStorage(app);
-const database = getDatabase(app);
+const app = firebase.initializeApp(firebaseConfig);
+const storage = firebase.storage();
+const database = firebase.database();
 
 // 監聽表單送出
 const form = document.getElementById("uploadForm");
