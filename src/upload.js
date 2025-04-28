@@ -1,10 +1,10 @@
-// 引入 Firebase
-import { initializeApp } from "firebase/app";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { getDatabase, ref as dbRef, set } from "firebase/database";
-import { v4 as uuidv4 } from 'uuid';
+// 引入 Firebase 模組化 API
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-storage.js";
+import { getDatabase, ref as dbRef, set } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
+import { v4 as uuidv4 } from 'https://cdn.skypack.dev/uuid';  // 使用 CDN 引入 uuid
 
-// Firebase設定
+// Firebase 設定
 const firebaseConfig = {
   apiKey: "AIzaSyCZ_s-tVGQtrS3Jts_ccXWBvsg0KTRljdY",
   authDomain: "soundkeep-79219.firebaseapp.com",
@@ -15,9 +15,10 @@ const firebaseConfig = {
   appId: "1:239015232427:web:9134721712ab88c4c548ee"
 };
 
-const app = firebase.initializeApp(firebaseConfig);
-const storage = firebase.storage();
-const database = firebase.database();
+// 初始化 Firebase
+const app = initializeApp(firebaseConfig);
+const storage = getStorage(app);
+const database = getDatabase(app);
 
 // 監聽表單送出
 const form = document.getElementById("uploadForm");
