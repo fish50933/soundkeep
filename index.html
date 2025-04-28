@@ -1,97 +1,70 @@
-<!DOCTYPE html>
-<html lang="zh-Hant">
-<head>
-  <meta charset="UTF-8">
-  <title>聲趣 SoundKeep - 上傳音頻卡片</title>
+<script type="module">
+  // 引入 Firebase 模組化 API
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+  import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-storage.js";
+  import { getDatabase, ref as dbRef, set } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
+  import { v4 as uuidv4 } from 'https://cdn.skypack.dev/uuid';  // 使用 CDN 引入 uuid
 
-  <!-- 正確載入 Firebase (不用 type="module") -->
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js"></script>
-</head>   <!-- 🛑 你剛剛漏掉這個！這裡要關閉 head！ -->
+  // Firebase 設定
+  const firebaseConfig = {
+    apiKey: "AIzaSyCZ_s-tVGQtrS3Jts_ccXWBvsg0KTRljdY",
+    authDomain: "soundkeep-79219.firebaseapp.com",
+    databaseURL: "https://soundkeep-79219-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "soundkeep-79219",
+    storageBucket: "soundkeep-79219.appspot.com",
+    messagingSenderId: "239015232427",
+    appId: "1:239015232427:web:9134721712ab88c4c548ee"
+  };
 
-<body>
-  <style>
-    body {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background-color: #f0f2f5;
+  // 初始化 Firebase
+  const app = initializeApp(firebaseConfig);
+  const storage = getStorage(app);
+  const database = getDatabase(app);
+
+  // 監聽表單送出
+  const form = document.getElementById("uploadForm");
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const audioFile = document.getElementById("audioFile").files[0];
+    const blessingMessage = document.getElementById("blessingMessage").value.trim();
+    const cardPassword = document.getElementById("cardPassword").value.trim();
+
+    if (!audioFile || !blessingMessage || !cardPassword) {
+      alert("請完整填寫表單");
+      return;
     }
-  
-    h1 {
-      margin-bottom: 20px;
-      color: #333;
+
+    try {
+      // 生成卡片ID
+      const cardId = uuidv4();
+      console.log("生成卡片ID:", cardId);
+
+      // 上傳音頻到 Storage
+      const audioRef = ref(storage, `audios/${cardId}`);
+      console.log("開始上傳音檔...");
+      await uploadBytes(audioRef, audioFile);
+      console.log("音檔上傳完成");
+
+      const audioURL = await getDownloadURL(audioRef);
+      console.log("取得音檔網址:", audioURL);
+
+      // 儲存資料到 Database
+      console.log("開始儲存到資料庫...");
+      await set(dbRef(database, `cards/${cardId}`), {
+        audioURL: audioURL,
+        blessingMessage: blessingMessage,
+        password: cardPassword,
+        editTimes: 0  // 修改次數，初始為0
+      });
+      console.log("資料庫儲存完成");
+
+      alert(`上傳成功！請記下你的卡片ID：\n${cardId}`);
+      form.reset(); // 清空表單
+    } catch (error) {
+      console.error("上傳過程發生錯誤:", error);
+      alert(`上傳失敗：${error.message}`);
     }
-  
-    form {
-      background-color: #ffffff;
-      padding: 30px;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      width: 300px;
-    }
-  
-    label {
-      font-weight: bold;
-      display: block;
-      margin-bottom: 6px;
-      color: #555;
-    }
-  
-    input[type="file"],
-    input[type="password"],
-    textarea {
-      width: 100%;
-      padding: 8px;
-      margin-bottom: 16px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      box-sizing: border-box;
-    }
-  
-    button {
-      width: 100%;
-      background-color: #4CAF50;
-      color: white;
-      padding: 10px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 16px;
-    }
-  
-    button:hover {
-      background-color: #45a049;
-    }
-  </style>
-  
-  <h1>聲趣 SoundKeep｜上傳卡片內容</h1>
-  
-  <form id="uploadForm">
-    <div>
-      <label for="audioFile">音頻檔案（必填）</label>
-      <input type="file" id="audioFile" accept="audio/*" required />
-    </div>
-  
-    <div>
-      <label for="blessingMessage">祝福語（必填）</label>
-      <textarea id="blessingMessage" rows="4" placeholder="寫下你的祝福..." required></textarea>
-    </div>
-  
-    <div>
-      <label for="cardPassword">設定密碼（必填）</label>
-      <input type="password" id="cardPassword" placeholder="密碼" required />
-    </div>
-  
-    <button type="submit">送出上傳</button>
-  </form>
-  
-  <script type="module" src="/upload.js"></script>
-  
-</body>
-</html>
+  });
+</script>
