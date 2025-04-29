@@ -27,7 +27,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
 
   <script>
-    // 1. 初始化 Firebase
+    // 初始化 Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyCZ_s-tVGQtrS3Jts_ccXWBvsg0KTRljdY",
       authDomain: "soundkeep-79219.firebaseapp.com",
@@ -40,20 +40,19 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // 2. 從 URL 取得 ID
+    // 從 URL 抓取卡片 ID
     const params = new URLSearchParams(window.location.search);
     const id = params.get("id");
 
     if (!id) {
       document.getElementById("message").innerText = "找不到對應的卡片 ID。";
     } else {
-      // 3. 抓取資料
       firebase.database().ref("cards/" + id).once("value").then((snapshot) => {
         const data = snapshot.val();
         if (data) {
-          document.getElementById("message").innerText = data.text || "（無文字祝福）";
+          document.getElementById("message").innerText = data.blessingMessage || "（無文字祝福）";
           const audio = document.getElementById("audio");
-          audio.src = data.audioUrl;
+          audio.src = data.audioURL;
           audio.style.display = "block";
         } else {
           document.getElementById("message").innerText = "查無此卡片資料。";
