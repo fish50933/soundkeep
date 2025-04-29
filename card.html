@@ -2,74 +2,58 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
-  <title>SOUNDKEEP - 你的祝福卡片</title>
+  <title>你的祝福卡片</title>
   <style>
     body {
       margin: 0;
-      height: 100vh;
-      background: linear-gradient(180deg, #050518, #0b0c2a);
-      color: #fff;
+      padding: 0;
       font-family: 'Noto Sans TC', sans-serif;
+      background: linear-gradient(135deg, #d0bfff, #aebaff, #c4e0e5);
+      min-height: 100vh;
       display: flex;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 1.5rem;
+      backdrop-filter: blur(16px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+      padding: 2.5rem;
       text-align: center;
+      color: white;
+      max-width: 90%;
+      width: 400px;
     }
-    .logo {
-      position: absolute;
-      top: 30px;
-      left: 30px;
-      color: #7aa2f7;
+
+    h1 {
+      font-size: 1.8rem;
+      margin-bottom: 1.5rem;
     }
-    .play-button {
-      width: 180px;
-      height: 180px;
-      border-radius: 50%;
-      border: 2px solid #7aa2f7;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 20px auto;
-      cursor: pointer;
-      box-shadow: 0 0 20px #7aa2f7;
+
+    #message {
+      font-size: 1.2rem;
+      margin-bottom: 2rem;
     }
-    .play-button::before {
-      content: '';
-      display: block;
-      border-style: solid;
-      border-width: 20px 0 20px 35px;
-      border-color: transparent transparent transparent #7aa2f7;
-      margin-left: 5px;
-    }
-    .message-box {
-      margin-top: 30px;
-      border: 2px solid #7aa2f7;
-      padding: 20px 40px;
-      border-radius: 20px;
-      font-size: 1.5rem;
-      box-shadow: 0 0 15px #7aa2f7;
-    }
+
     audio {
-      margin-top: 30px;
-      width: 300px;
+      width: 100%;
+      outline: none;
+    }
+
+    audio::-webkit-media-controls-panel {
+      background-color: rgba(255, 255, 255, 0.2);
+      border-radius: 0.5rem;
     }
   </style>
 </head>
 <body>
-  <div class="logo">
-    <h2>聲趣SOUNDKEEP</h2>
-    <p>聲音，讓情感發聲</p>
+  <div class="card">
+    <h1>你收到一份聲音祝福 ✨</h1>
+    <div id="message">載入中...</div>
+    <audio id="audio" controls style="display:none"></audio>
   </div>
-
-  <!-- 自訂播放按鈕 -->
-  <div class="play-button" onclick="document.getElementById('audio').play()"></div>
-
-  <!-- 內建播放器版本（預設隱藏，可切換顯示） -->
-  <audio id="audio" controls style="display: none;"></audio>
-
-  <!-- 祝福訊息 -->
-  <div class="message-box" id="message">載入中...</div>
 
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
@@ -81,29 +65,32 @@
       authDomain: "soundkeep-79219.firebaseapp.com",
       databaseURL: "https://soundkeep-79219-default-rtdb.asia-southeast1.firebasedatabase.app",
       projectId: "soundkeep-79219",
-      storageBucket: "soundkeep-79219.appspot.com",
+      storageBucket: "soundkeep-79219.firebasestorage.app",
       messagingSenderId: "239015232427",
       appId: "1:239015232427:web:9134721712ab88c4c548ee"
     };
     firebase.initializeApp(firebaseConfig);
-
     const db = firebase.database();
+
+    // 取得卡片 ID
     const params = new URLSearchParams(window.location.search);
     const id = params.get("id");
 
     if (!id) {
-      document.getElementById("message").innerText = "找不到卡片 ID";
+      document.getElementById("message").innerText = "找不到對應的卡片 ID。";
     } else {
-      db.ref("cards/" + id).once("value").then((snapshot) => {
+      firebase.database().ref("cards/" + id).once("value").then((snapshot) => {
         const data = snapshot.val();
         if (data) {
           document.getElementById("message").innerText = data.blessingMessage || "（無文字祝福）";
           const audio = document.getElementById("audio");
           audio.src = data.audioURL;
-          audio.style.display = "block"; // 顯示原生播放器
+          audio.style.display = "block";
         } else {
           document.getElementById("message").innerText = "查無此卡片資料。";
         }
+      }).catch((error) => {
+        document.getElementById("message").innerText = "讀取失敗：" + error.message;
       });
     }
   </script>
