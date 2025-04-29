@@ -4,30 +4,55 @@
   <meta charset="UTF-8">
   <title>你的祝福卡片</title>
   <style>
+    * {
+      box-sizing: border-box;
+    }
     body {
-      font-family: sans-serif;
+      margin: 0;
+      padding: 0;
+      font-family: "Helvetica Neue", sans-serif;
+      background: linear-gradient(to right, #f9f9f9, #e3f2fd);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .card {
+      background-color: #ffffff;
+      border-radius: 20px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+      padding: 2rem 3rem;
       text-align: center;
-      padding: 2rem;
+      max-width: 500px;
+      width: 100%;
+    }
+    h1 {
+      color: #0077cc;
+      font-size: 1.8rem;
     }
     #message {
-      font-size: 1.5rem;
-      margin-top: 2rem;
+      font-size: 1.4rem;
+      color: #333;
+      margin-top: 1.5rem;
+      white-space: pre-wrap;
     }
     audio {
       margin-top: 2rem;
+      width: 100%;
     }
   </style>
 </head>
 <body>
-  <h1>你收到一份聲音祝福！</h1>
-  <div id="message">載入中...</div>
-  <audio id="audio" controls style="display:none"></audio>
+  <div class="card">
+    <h1>你收到一份聲音祝福！</h1>
+    <div id="message">載入中...</div>
+    <audio id="audio" controls style="display:none"></audio>
+  </div>
 
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
 
   <script>
-    // 初始化 Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyCZ_s-tVGQtrS3Jts_ccXWBvsg0KTRljdY",
       authDomain: "soundkeep-79219.firebaseapp.com",
@@ -38,9 +63,7 @@
       appId: "1:239015232427:web:9134721712ab88c4c548ee"
     };
     firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
 
-    // 從 URL 抓取卡片 ID
     const params = new URLSearchParams(window.location.search);
     const id = params.get("id");
 
