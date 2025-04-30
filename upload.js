@@ -10,7 +10,7 @@ const firebaseConfig = {
   authDomain: "soundkeep-79219.firebaseapp.com",
   databaseURL: "https://soundkeep-79219-default-rtdb.asia-southeast1.firebasedatabase.app",
   projectId: "soundkeep-79219",
-  storageBucket: "soundkeep-79219.appspot.com",
+  storageBucket: "soundkeep-79219.firebaseapp.com",
   messagingSenderId: "239015232427",
   appId: "1:239015232427:web:9134721712ab88c4c548ee"
 };
@@ -27,7 +27,7 @@ form.addEventListener("submit", async (e) => {
   e.preventDefault();
 
   const audioFile = document.getElementById("audioFile").files[0];
-  const bgImageFile = document.getElementById("bgImage").files[0];  // 背景圖
+  const bgImageFile = document.getElementById("bgImage").files[0];  // 背景圖（可選）
   const blessingMessage = document.getElementById("blessingMessage").value.trim();
   const cardPassword = document.getElementById("cardPassword").value.trim();
 
@@ -57,14 +57,15 @@ form.addEventListener("submit", async (e) => {
       audioURL,
       blessingMessage,
       password: cardPassword,
-      bgImageURL,     // 空字串代表沒有上傳背景圖
+      bgImageURL,     // 若無背景圖，則為空字串
       editTimes: 0
     };
 
     await set(dbRef(database, `cards/${cardId}`), cardData);
 
     alert(`上傳成功！請記下你的卡片ID：\n${cardId}`);
-    form.reset();
+    // 轉跳到 card.html
+    window.location.href = `card.html?id=${cardId}`;
   } catch (err) {
     console.error("上傳錯誤：", err);
     alert(`發生錯誤，請稍後再試：${err.message}`);
