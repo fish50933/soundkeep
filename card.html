@@ -1,91 +1,46 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8" />
-  <title>聲趣 SoundKeep｜卡片展示</title>
-  <script type="module" src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
-  <script type="module" src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js"></script>
+  <meta charset="UTF-8">
+  <title>聲趣 SoundKeep 卡片</title>
   <style>
-    html, body {
+    body {
       margin: 0;
       padding: 0;
-      height: 100%;
-      font-family: 'Arial', sans-serif;
-      overflow: hidden;
-    }
-
-    body {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background: #000;
+      font-family: sans-serif;
       color: white;
-    }
-
-    #background {
-      position: absolute;
-      top: 0; left: 0;
-      width: 100%;
-      height: 100%;
-      background: url('https://images.unsplash.com/photo-1503264116251-35a269479413?ixlib=rb-4.0.3&auto=format&fit=crop&w=1280&q=80') no-repeat center center;
+      text-align: center;
+      background-color: #001d3d;
+      background-image: radial-gradient(ellipse at bottom, #001d3d 0%, #000814 100%);
       background-size: cover;
-      z-index: -1;
+      background-position: center;
     }
-
     .logo {
       position: absolute;
-      top: 20px;
-      left: 20px;
-      font-size: 20px;
+      top: 16px;
+      left: 16px;
       font-weight: bold;
-      color: white;
-      background-color: rgba(0, 0, 0, 0.4);
-      padding: 8px 16px;
-      border-radius: 10px;
+      font-size: 18px;
     }
-
-    .card-container {
-      text-align: center;
-      max-width: 90%;
-    }
-
-    .blessing {
-      font-size: 22px;
-      margin-bottom: 30px;
+    .card {
+      margin-top: 120px;
       background: rgba(0, 0, 0, 0.5);
-      padding: 20px;
+      padding: 24px;
       border-radius: 16px;
+      display: inline-block;
+      max-width: 80%;
     }
-
-    .play-button {
-      background-color: white;
-      color: black;
-      font-size: 32px;
-      padding: 20px 40px;
-      border: none;
-      border-radius: 50px;
-      cursor: pointer;
-      transition: background 0.3s ease;
-    }
-
-    .play-button:hover {
-      background-color: #ddd;
-    }
-
     audio {
-      display: none;
+      width: 100%;
+      margin-top: 16px;
     }
   </style>
 </head>
 <body>
-
-  <div id="background"></div>
   <div class="logo">聲趣 SoundKeep</div>
-
-  <div class="card-container">
-    <div id="blessingText" class="blessing">載入中...</div>
-    <button id="playButton" class="play-button">▶ 播放</button>
-    <audio id="audioPlayer" controls></audio>
+  <div class="card" id="cardContainer">
+    <div id="message"></div>
+    <audio id="audio" controls></audio>
   </div>
 
   <script type="module">
@@ -97,7 +52,7 @@
       authDomain: "soundkeep-79219.firebaseapp.com",
       databaseURL: "https://soundkeep-79219-default-rtdb.asia-southeast1.firebasedatabase.app",
       projectId: "soundkeep-79219",
-      storageBucket: "soundkeep-79219.firebasestorage.app",
+      storageBucket: "soundkeep-79219.appspot.com",
       messagingSenderId: "239015232427",
       appId: "1:239015232427:web:9134721712ab88c4c548ee"
     };
@@ -105,38 +60,36 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    const params = new URLSearchParams(window.location.search);
-    const cardId = params.get("id");
-
-    const blessingEl = document.getElementById("blessingText");
-    const audioEl = document.getElementById("audioPlayer");
-    const backgroundEl = document.getElementById("background");
+    // 取得卡片 ID
+    const urlParams = new URLSearchParams(window.location.search);
+    const cardId = urlParams.get("id");
 
     if (!cardId) {
-      blessingEl.textContent = "錯誤：未提供卡片 ID。";
+      alert("未提供卡片ID");
     } else {
-      const cardRef = ref(db, `cards/${cardId}`);
-      get(cardRef).then(snapshot => {
+      const cardRef = ref(db, "cards/" + cardId);
+      get(cardRef).then((snapshot) => {
         if (snapshot.exists()) {
           const data = snapshot.val();
-          blessingEl.textContent = data.blessingMessage || "沒有祝福語";
-          audioEl.src = data.audioURL;
 
-          if (data.backgroundImageURL) {
-            backgroundEl.style.backgroundImage = `url('${data.backgroundImageURL}')`;
+          // 設定背景圖片
+          if (data.bgImageURL && data.bgImageURL !== "") {
+            document.body.style.background = `url('${data.bgImageURL}') no-repeat center center fixed`;
+            document.body.style.backgroundSize = 'cover';
           }
 
+          // 顯示內容
+          document.getElementById("message").innerText = data.blessingMessage || "（沒有祝福語）";
+          document.getElementById("audio").src = data.audioURL;
+
         } else {
-          blessingEl.textContent = "找不到這張卡片";
+          alert("找不到卡片內容！");
         }
-      }).catch(error => {
-        blessingEl.textContent = "讀取資料錯誤：" + error;
+      }).catch((err) => {
+        console.error(err);
+        alert("讀取資料時發生錯誤");
       });
     }
-
-    document.getElementById("playButton").addEventListener("click", () => {
-      audioEl.play();
-    });
   </script>
 </body>
 </html>
