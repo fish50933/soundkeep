@@ -1,94 +1,94 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
-  <title>聲趣 SoundKeep - 上傳音頻卡片</title>
-  <script type="module" src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
-  <script type="module" src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage.js"></script>
-  <script type="module" src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js"></script>
-</head>
-<body>
+  <title>你的祝福卡片</title>
   <style>
     body {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background-color: #f0f2f5;
+      font-family: sans-serif;
+      text-align: center;
+      padding: 2rem;
     }
-  
-    h1 {
-      margin-bottom: 20px;
+    #message {
+      font-size: 1.5rem;
+      margin-top: 2rem;
+    }
+    audio {
+      margin-top: 2rem;
+    }
+
+    /* 題材主題樣式 */
+    .theme-default {
+      background: linear-gradient(to bottom right, #ffffff, #f0f0f0);
       color: #333;
     }
-  
-    form {
-      background-color: #ffffff;
-      padding: 30px;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      width: 300px;
+    .theme-christmas {
+      background: linear-gradient(to bottom right, #ffdddd, #ffeeee);
+      color: #900;
     }
-  
-    label {
-      font-weight: bold;
-      display: block;
-      margin-bottom: 6px;
-      color: #555;
+    .theme-valentine {
+      background: linear-gradient(to bottom right, #ffe6e6, #ffb3c6);
+      color: #c2185b;
     }
-  
-    input[type="file"],
-    input[type="password"],
-    textarea {
-      width: 100%;
-      padding: 8px;
-      margin-bottom: 16px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      box-sizing: border-box;
+    .theme-newyear {
+      background: linear-gradient(to bottom right, gold, white);
+      color: crimson;
     }
-  
-    button {
-      width: 100%;
-      background-color: #4CAF50;
-      color: white;
-      padding: 10px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 16px;
-    }
-  
-    button:hover {
-      background-color: #45a049;
+    .theme-mothersday {
+      background: linear-gradient(to bottom right, #fff0f5, #ffe4e1);
+      color: #d63384;
+      font-family: "Segoe Script", cursive;
     }
   </style>
-  
-  <h1>聲趣 SoundKeep｜上傳卡片內容</h1>
-  
-  <form id="uploadForm">
-    <div>
-      <label for="audioFile">音頻檔案（必填）</label>
-      <input type="file" id="audioFile" accept="audio/*" required />
-    </div>
-  
-    <div>
-      <label for="blessingMessage">祝福語（必填）</label>
-      <textarea id="blessingMessage" rows="4" placeholder="寫下你的祝福..." required></textarea>
-    </div>
-  
-    <div>
-      <label for="cardPassword">設定密碼（必填）</label>
-      <input type="password" id="cardPassword" placeholder="密碼" required />
-    </div>
-  
-    <button type="submit">送出上傳</button>
-  </form>
-  
-  <script type="module" src="./upload.js"></script>
-  
+</head>
+<body class="theme-default">
+  <h1>你收到一份聲音祝福！</h1>
+  <div id="message">載入中...</div>
+  <audio id="audio" controls style="display:none"></audio>
+
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+
+  <script>
+    // 初始化 Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyCZ_s-tVGQtrS3Jts_ccXWBvsg0KTRljdY",
+      authDomain: "soundkeep-79219.firebaseapp.com",
+      databaseURL: "https://soundkeep-79219-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "soundkeep-79219",
+      storageBucket: "soundkeep-79219.firebasestorage.app",
+      messagingSenderId: "239015232427",
+      appId: "1:239015232427:web:9134721712ab88c4c548ee"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // 從 URL 取得 ID
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get("id");
+
+    if (!id) {
+      document.getElementById("message").innerText = "找不到對應的卡片 ID。";
+    } else {
+      firebase.database().ref("cards/" + id).once("value").then((snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+          document.getElementById("message").innerText = data.blessingMessage || "（無文字祝福）";
+          const audio = document.getElementById("audio");
+          audio.src = data.audioURL;
+          audio.style.display = "block";
+
+          // 設定主題
+          const theme = data.theme || "default";
+          document.body.classList.remove("theme-default");
+          document.body.classList.add("theme-" + theme);
+        } else {
+          document.getElementById("message").innerText = "查無此卡片資料。";
+        }
+      }).catch((error) => {
+        document.getElementById("message").innerText = "讀取失敗：" + error.message;
+      });
+    }
+  </script>
 </body>
-</html>這樣嗎?
+</html>
