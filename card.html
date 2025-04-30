@@ -13,15 +13,21 @@
       align-items: center;
       justify-content: center;
       min-height: 100vh;
+      background-size: cover;
+      background-repeat: no-repeat;
+      background-position: center;
+      transition: background 0.3s ease-in-out;
     }
 
     .card {
-      background-color: white;
+      background-color: rgba(255, 255, 255, 0.9);
       border-radius: 12px;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
       padding: 30px;
       max-width: 400px;
       text-align: center;
+      position: relative;
+      z-index: 2;
     }
 
     .card audio {
@@ -35,29 +41,31 @@
       color: #333;
     }
 
-    /* 額外主題樣式 */
-    .theme-birthday {
-      background-color: #fff0f5;
-      color: #d63384;
-      border: 3px dashed #f783ac;
+    /* 插圖 */
+    .background-icon {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      width: 100px;
+      opacity: 0.7;
+      z-index: 1;
     }
 
-    .theme-motherday {
-      background-color: #fff8f0;
-      color: #e76f51;
-      border: 3px solid #f4a261;
-    }
-    
-    .theme-valentine {
-      background-color: #ffe6f0;
-      color: #c2185b;
-      border: 3px dashed #f06292;
+    /* 主題樣式 */
+    body.theme-birthday {
+      background-image: url('https://i.imgur.com/tgx1iOB.jpg'); /* 彩色氣球背景 */
     }
 
-    .theme-christmas {
-      background-color: #f0fff4;
-      color: #2e7d32;
-      border: 3px solid #81c784;
+    body.theme-motherday {
+      background-image: url('https://i.imgur.com/kMSspUG.jpg'); /* 溫暖康乃馨背景 */
+    }
+
+    body.theme-valentine {
+      background-image: url('https://i.imgur.com/D9ObCU2.jpg'); /* 粉色愛心背景 */
+    }
+
+    body.theme-christmas {
+      background-image: url('https://i.imgur.com/6mB3RM8.jpg'); /* 聖誕風格背景 */
     }
   </style>
 </head>
@@ -68,6 +76,8 @@
   <audio controls id="audioPlayer"></audio>
   <div class="message" id="messageText">載入中...</div>
 </div>
+
+<img id="themeIcon" class="background-icon" style="display:none;" />
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
@@ -91,7 +101,7 @@
 
   const audioPlayer = document.getElementById("audioPlayer");
   const messageText = document.getElementById("messageText");
-  const cardDiv = document.getElementById("card");
+  const themeIcon = document.getElementById("themeIcon");
 
   if (!cardId) {
     messageText.textContent = "未提供卡片 ID。";
@@ -103,18 +113,21 @@
         audioPlayer.src = data.audioURL;
         messageText.textContent = data.blessingMessage || "無祝福語";
 
-        // 根據主題套用樣式
         const theme = data.theme || "default";
-        if (theme === "birthday") {
-          cardDiv.classList.add("theme-birthday");
-        } else if (theme === "motherday") {
-          cardDiv.classList.add("theme-motherday");
-        }else if (theme === "valentine") {
-          cardDiv.classList.add("theme-valentine");
-        } else if (theme === "christmas") {
-          cardDiv.classList.add("theme-christmas");
+        document.body.classList.add(`theme-${theme}`);
+
+        // 加載對應插圖
+        const iconMap = {
+          birthday: "https://i.imgur.com/dE6uUdU.png",
+          motherday: "https://i.imgur.com/9lfWRe3.png",
+          valentine: "https://i.imgur.com/lQIVK2q.png",
+          christmas: "https://i.imgur.com/Xd5A7fp.png"
+        };
+
+        if (iconMap[theme]) {
+          themeIcon.src = iconMap[theme];
+          themeIcon.style.display = "block";
         }
-        // default 不加 class
       } else {
         messageText.textContent = "找不到卡片資料。";
       }
