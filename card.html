@@ -53,29 +53,32 @@
     }
 
     #playButton {
-      width: 120px;
-      height: 120px;
+      width: 100px;
+      height: 100px;
       border-radius: 50%;
-      background: #0ff;
-      box-shadow: 0 0 20px #0ff, 0 0 40px #0ff, 0 0 60px #0ff;
+      background: linear-gradient(145deg, #0ff, #08c);
+      box-shadow: 0 0 15px #0ff, 0 0 30px #08f, inset 0 0 10px rgba(0,0,0,0.5);
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      transition: transform 0.2s ease-in-out;
+      transition: all 0.3s ease;
       z-index: 2;
+      border: 2px solid #0ff;
     }
 
     #playButton:hover {
       transform: scale(1.1);
+      box-shadow: 0 0 20px #0ff, 0 0 40px #08f, inset 0 0 15px rgba(0,0,0,0.6);
     }
 
     #playIcon {
-      width: 0; 
-      height: 0; 
-      border-left: 30px solid #000;
-      border-top: 20px solid transparent;
-      border-bottom: 20px solid transparent;
+      width: 0;
+      height: 0;
+      border-left: 24px solid black;
+      border-top: 16px solid transparent;
+      border-bottom: 16px solid transparent;
+      margin-left: 4px;
     }
 
     audio {
