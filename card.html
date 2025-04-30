@@ -7,135 +7,143 @@
     body {
       margin: 0;
       font-family: Arial, sans-serif;
-      background-color: #f9f9f9;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
+      background: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%);
+      overflow: hidden;
       min-height: 100vh;
-      background-size: cover;
-      background-repeat: no-repeat;
-      background-position: center;
-      transition: background 0.3s ease-in-out;
     }
 
-    .card {
-      background-color: rgba(255, 255, 255, 0.9);
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      padding: 30px;
-      max-width: 400px;
-      text-align: center;
-      position: relative;
+    /* 流動星星動畫 */
+    .stars {
+      width: 100%;
+      height: 100%;
+      background: transparent url('https://i.imgur.com/NM4Hjwr.png') repeat top center;
+      animation: moveStars 60s linear infinite;
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 0;
+    }
+
+    @keyframes moveStars {
+      from { background-position: 0 0; }
+      to { background-position: 0 -2000px; }
+    }
+
+    .header {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      color: white;
+      font-size: 20px;
       z-index: 2;
     }
 
-    .card audio {
-      margin-top: 20px;
-      width: 100%;
+    .card-container {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
     }
 
-    .card .message {
-      margin-top: 20px;
+    .card {
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      box-sizing: border-box;
+      aspect-ratio: attr(data-ratio);
+      max-width: 90vw;
+      max-height: 80vh;
+    }
+
+    .card-content {
+      background-color: rgba(255, 255, 255, 0.85);
+      padding: 15px;
+      border-radius: 12px;
+      text-align: center;
+      max-width: 90%;
+    }
+
+    .card-content audio {
+      width: 100%;
+      margin-top: 10px;
+    }
+
+    .card-content .message {
+      margin-top: 10px;
       font-size: 16px;
       color: #333;
-    }
-
-    .background-icon {
-      position: absolute;
-      bottom: 20px;
-      right: 20px;
-      width: 100px;
-      opacity: 0.7;
-      z-index: 1;
-    }
-
-    /* 主題樣式 */
-    body.theme-birthday {
-      background-image: url('https://i.imgur.com/tgx1iOB.jpg'); /* 彩色氣球背景 */
-    }
-
-    body.theme-motherday {
-      background-image: url('https://firebasestorage.googleapis.com/v0/b/soundkeep-79219.firebasestorage.app/o/backgrounds%2F884551.jpg?alt=media&token=b6868839-942b-43d2-8821-aab9da8f08a2'); /* 自訂康乃馨背景 */
-    }
-
-    body.theme-valentine {
-      background-image: url('https://i.imgur.com/D9ObCU2.jpg'); /* 粉色愛心背景 */
-    }
-
-    body.theme-christmas {
-      background-image: url('https://i.imgur.com/6mB3RM8.jpg'); /* 聖誕風格背景 */
     }
   </style>
 </head>
 <body>
+  <div class="stars"></div>
+  <div class="header">聲趣 SoundKeep</div>
+  <div class="card-container">
+    <div id="card" class="card" data-ratio="3/4">
+      <div class="card-content">
+        <audio controls id="audioPlayer"></audio>
+        <div class="message" id="messageText">載入中...</div>
+      </div>
+    </div>
+  </div>
 
-<div class="card" id="card">
-  <h2>你的語音卡片</h2>
-  <audio controls id="audioPlayer"></audio>
-  <div class="message" id="messageText">載入中...</div>
-</div>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+    import { getDatabase, ref, get, child } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
 
-<img id="themeIcon" class="background-icon" style="display:none;" />
+    const firebaseConfig = {
+      apiKey: "AIzaSyCZ_s-tVGQtrS3Jts_ccXWBvsg0KTRljdY",
+      authDomain: "soundkeep-79219.firebaseapp.com",
+      databaseURL: "https://soundkeep-79219-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "soundkeep-79219",
+      storageBucket: "soundkeep-79219.firebasestorage.app",
+      messagingSenderId: "239015232427",
+      appId: "1:239015232427:web:9134721712ab88c4c548ee"
+    };
 
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-  import { getDatabase, ref, get, child } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
+    const app = initializeApp(firebaseConfig);
+    const database = getDatabase(app);
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyCZ_s-tVGQtrS3Jts_ccXWBvsg0KTRljdY",
-    authDomain: "soundkeep-79219.firebaseapp.com",
-    databaseURL: "https://soundkeep-79219-default-rtdb.asia-southeast1.firebasedatabase.app",
-    projectId: "soundkeep-79219",
-    storageBucket: "soundkeep-79219.firebasestorage.app",
-    messagingSenderId: "239015232427",
-    appId: "1:239015232427:web:9134721712ab88c4c548ee"
-  };
+    const urlParams = new URLSearchParams(window.location.search);
+    const cardId = urlParams.get("id");
 
-  const app = initializeApp(firebaseConfig);
-  const database = getDatabase(app);
+    const audioPlayer = document.getElementById("audioPlayer");
+    const messageText = document.getElementById("messageText");
+    const card = document.getElementById("card");
 
-  const urlParams = new URLSearchParams(window.location.search);
-  const cardId = urlParams.get("id");
+    if (!cardId) {
+      messageText.textContent = "未提供卡片 ID。";
+    } else {
+      const dbRef = ref(database);
+      get(child(dbRef, `cards/${cardId}`)).then((snapshot) => {
+        if (snapshot.exists()) {
+          const data = snapshot.val();
+          audioPlayer.src = data.audioURL;
+          messageText.textContent = data.blessingMessage || "無祝福語";
 
-  const audioPlayer = document.getElementById("audioPlayer");
-  const messageText = document.getElementById("messageText");
-  const themeIcon = document.getElementById("themeIcon");
+          if (data.cardImageURL) {
+            card.style.backgroundImage = `url('${data.cardImageURL}')`;
+          }
 
-  if (!cardId) {
-    messageText.textContent = "未提供卡片 ID。";
-  } else {
-    const dbRef = ref(database);
-    get(child(dbRef, `cards/${cardId}`)).then((snapshot) => {
-      if (snapshot.exists()) {
-        const data = snapshot.val();
-        audioPlayer.src = data.audioURL;
-        messageText.textContent = data.blessingMessage || "無祝福語";
-
-        const theme = data.theme || "default";
-        document.body.classList.add(`theme-${theme}`);
-
-        // 加載對應插圖
-        const iconMap = {
-          birthday: "https://i.imgur.com/dE6uUdU.png",
-          motherday: "https://i.imgur.com/9lfWRe3.png",
-          valentine: "https://i.imgur.com/lQIVK2q.png",
-          christmas: "https://i.imgur.com/Xd5A7fp.png"
-        };
-
-        if (iconMap[theme]) {
-          themeIcon.src = iconMap[theme];
-          themeIcon.style.display = "block";
+          if (data.cardRatio) {
+            card.setAttribute('data-ratio', data.cardRatio);
+            card.style.aspectRatio = data.cardRatio;
+          }
+        } else {
+          messageText.textContent = "找不到卡片資料。";
         }
-      } else {
-        messageText.textContent = "找不到卡片資料。";
-      }
-    }).catch((error) => {
-      console.error(error);
-      messageText.textContent = "讀取卡片時發生錯誤。";
-    });
-  }
-</script>
-
+      }).catch((error) => {
+        console.error(error);
+        messageText.textContent = "讀取卡片時發生錯誤。";
+      });
+    }
+  </script>
 </body>
 </html>
