@@ -2,64 +2,74 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
-  <title>你的祝福卡片</title>
-  <link href="https://fonts.googleapis.com/css2?family=Zhi+Mang+Xing&display=swap" rel="stylesheet">
+  <title>SOUNDKEEP - 你的祝福卡片</title>
   <style>
     body {
       margin: 0;
-      padding: 0;
-      font-family: 'Zhi Mang Xing', cursive;
-      background: url('https://images.unsplash.com/photo-1517760444937-f6397edcbbcd?auto=format&fit=crop&w=1000&q=80') no-repeat center center fixed;
-      background-size: cover;
+      height: 100vh;
+      background: linear-gradient(180deg, #050518, #0b0c2a);
+      color: #fff;
+      font-family: 'Noto Sans TC', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+    .logo {
+      position: absolute;
+      top: 30px;
+      left: 30px;
+      color: #7aa2f7;
+    }
+    .play-button {
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      border: 2px solid #7aa2f7;
       display: flex;
       align-items: center;
       justify-content: center;
-      height: 100vh;
+      margin: 20px auto;
+      cursor: pointer;
+      box-shadow: 0 0 20px #7aa2f7;
     }
-
-    .card {
-      background: rgba(255, 255, 255, 0.85);
-      border-radius: 1rem;
-      padding: 2rem;
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
-      max-width: 90%;
-      width: 400px;
-      text-align: center;
+    .play-button::before {
+      content: '';
+      display: block;
+      border-style: solid;
+      border-width: 20px 0 20px 35px;
+      border-color: transparent transparent transparent #7aa2f7;
+      margin-left: 5px;
     }
-
-    h1 {
-      font-size: 2rem;
-      margin-bottom: 1rem;
-      color: #333;
+    .message-box {
+      margin-top: 30px;
+      border: 2px solid #7aa2f7;
+      padding: 20px 40px;
+      border-radius: 20px;
+      font-size: 1.5rem;
+      box-shadow: 0 0 15px #7aa2f7;
     }
-
-    #message {
-      font-size: 1.4rem;
-      margin-bottom: 1.5rem;
-      color: #555;
-    }
-
     audio {
-      width: 100%;
-      border-radius: 0.5rem;
-    }
-
-    audio::-webkit-media-controls-panel {
-      background-color: #fff4f4;
-    }
-
-    @media (max-width: 480px) {
-      h1 { font-size: 1.5rem; }
-      #message { font-size: 1.2rem; }
+      margin-top: 30px;
+      width: 300px;
     }
   </style>
 </head>
 <body>
-  <div class="card">
-    <h1>💌 一份手寫的聲音祝福</h1>
-    <div id="message">載入中...</div>
-    <audio id="audio" controls style="display:none"></audio>
+  <div class="logo">
+    <h2>聲趣SOUNDKEEP</h2>
+    <p>聲音，讓情感發聲</p>
   </div>
+
+  <!-- 自訂播放按鈕 -->
+  <div class="play-button" onclick="document.getElementById('audio').play()"></div>
+
+  <!-- 內建播放器版本（預設隱藏，可切換顯示） -->
+  <audio id="audio" controls style="display: none;"></audio>
+
+  <!-- 祝福訊息 -->
+  <div class="message-box" id="message">載入中...</div>
 
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
@@ -71,32 +81,29 @@
       authDomain: "soundkeep-79219.firebaseapp.com",
       databaseURL: "https://soundkeep-79219-default-rtdb.asia-southeast1.firebasedatabase.app",
       projectId: "soundkeep-79219",
-      storageBucket: "soundkeep-79219.firebasestorage.app",
+      storageBucket: "soundkeep-79219.appspot.com",
       messagingSenderId: "239015232427",
       appId: "1:239015232427:web:9134721712ab88c4c548ee"
     };
     firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
 
-    // 取得卡片 ID
+    const db = firebase.database();
     const params = new URLSearchParams(window.location.search);
     const id = params.get("id");
 
     if (!id) {
-      document.getElementById("message").innerText = "找不到對應的卡片 ID。";
+      document.getElementById("message").innerText = "找不到卡片 ID";
     } else {
-      firebase.database().ref("cards/" + id).once("value").then((snapshot) => {
+      db.ref("cards/" + id).once("value").then((snapshot) => {
         const data = snapshot.val();
         if (data) {
           document.getElementById("message").innerText = data.blessingMessage || "（無文字祝福）";
           const audio = document.getElementById("audio");
           audio.src = data.audioURL;
-          audio.style.display = "block";
+          audio.style.display = "block"; // 顯示原生播放器
         } else {
           document.getElementById("message").innerText = "查無此卡片資料。";
         }
-      }).catch((error) => {
-        document.getElementById("message").innerText = "讀取失敗：" + error.message;
       });
     }
   </script>
