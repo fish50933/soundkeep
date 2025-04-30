@@ -2,51 +2,86 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8">
-  <title>聲趣 SoundKeep 卡片</title>
+  <title>SOUNDKEEP - 語音卡片</title>
   <style>
     body {
       margin: 0;
       padding: 0;
-      font-family: sans-serif;
-      color: white;
-      text-align: center;
-      background-color: #001d3d;
-      background-image: radial-gradient(ellipse at bottom, #001d3d 0%, #000814 100%);
-      background-size: cover;
-      background-position: center;
-    }
-    .logo {
-      position: absolute;
-      top: 16px;
-      left: 16px;
-      font-weight: bold;
-      font-size: 18px;
-    }
-    .card {
-      margin-top: 120px;
-      background: rgba(0, 0, 0, 0.5);
-      padding: 24px;
-      border-radius: 16px;
-      display: inline-block;
-      max-width: 80%;
-    }
-    audio {
-      width: 100%;
-      outline: none;
+      background: radial-gradient(circle at center, #000814, #001d3d);
+      font-family: 'Segoe UI', sans-serif;
+      color: #ffffff;
+      overflow: hidden;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
     }
 
-    audio::-webkit-media-controls-panel {
-      background-color: rgba(255, 255, 255, 0.2);
-      border-radius: 0.5rem;
+    .brand {
+      position: absolute;
+      top: 20px;
+      left: 30px;
+      font-size: 24px;
+      font-weight: bold;
+      color: #00ffff;
+      text-shadow: 0 0 8px #00ffff, 0 0 12px #00ffff;
+    }
+
+    .title {
+      font-size: 1.5rem;
+      margin-bottom: 20px;
+      text-shadow: 0 0 6px rgba(255, 255, 255, 0.4);
+    }
+
+    .play-button {
+      width: 100px;
+      height: 100px;
+      border: 3px solid #00ffff;
+      border-radius: 50%;
+      background: transparent;
+      cursor: pointer;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 15px #00ffff;
+      transition: transform 0.2s ease;
+    }
+
+    .play-button:hover {
+      transform: scale(1.1);
+    }
+
+    .play-button::before {
+      content: '';
+      display: block;
+      margin-left: 5px;
+      width: 0;
+      height: 0;
+      border-left: 24px solid #00ffff;
+      border-top: 16px solid transparent;
+      border-bottom: 16px solid transparent;
+    }
+
+    #message {
+      margin-top: 30px;
+      font-size: 1.2rem;
+      padding: 0 20px;
+      text-align: center;
+    }
+
+    audio {
+      display: none;
     }
   </style>
 </head>
 <body>
-  <div class="logo">聲趣 SoundKeep</div>
-  <div class="card" id="cardContainer">
-    <div id="message"></div>
-    <audio id="audio" controls></audio>
-  </div>
+  <div class="brand">SOUNDKEEP</div>
+  <div class="title">來聽聽看我想對你說的話</div>
+  <button class="play-button" id="customPlay"></button>
+  <div id="message">載入中...</div>
+  <audio id="audio"></audio>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
@@ -65,34 +100,42 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    // 取得卡片 ID
     const urlParams = new URLSearchParams(window.location.search);
     const cardId = urlParams.get("id");
 
+    const audio = document.getElementById("audio");
+    const message = document.getElementById("message");
+    const playBtn = document.getElementById("customPlay");
+
     if (!cardId) {
-      alert("未提供卡片ID");
+      alert("找不到卡片ID");
     } else {
       const cardRef = ref(db, "cards/" + cardId);
       get(cardRef).then((snapshot) => {
         if (snapshot.exists()) {
           const data = snapshot.val();
+          message.innerText = data.blessingMessage || "（沒有祝福語）";
+          audio.src = data.audioURL;
 
-          // 設定背景圖片
           if (data.bgImageURL && data.bgImageURL !== "") {
-            document.body.style.background = `url('${data.bgImageURL}') no-repeat center center fixed`;
+            document.body.style.backgroundImage = `url('${data.bgImageURL}')`;
             document.body.style.backgroundSize = 'cover';
+            document.body.style.backgroundPosition = 'center';
           }
 
-          // 顯示內容
-          document.getElementById("message").innerText = data.blessingMessage || "（沒有祝福語）";
-          document.getElementById("audio").src = data.audioURL;
-
+          playBtn.addEventListener("click", () => {
+            if (audio.paused) {
+              audio.play();
+            } else {
+              audio.pause();
+            }
+          });
         } else {
-          alert("找不到卡片內容！");
+          message.innerText = "找不到卡片內容";
         }
       }).catch((err) => {
         console.error(err);
-        alert("讀取資料時發生錯誤");
+        message.innerText = "讀取資料錯誤";
       });
     }
   </script>
