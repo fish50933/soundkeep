@@ -1,91 +1,115 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8">
-  <title>SOUNDKEEP - 語音卡片</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SOUNDKEEP - 卡片</title>
   <style>
     body {
       margin: 0;
-      padding: 0;
-      background: radial-gradient(circle at center, #000814, #001d3d);
-      font-family: 'Segoe UI', sans-serif;
-      color: #ffffff;
-      overflow: hidden;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: radial-gradient(ellipse at bottom, #0d1b2a 0%, #000000 100%);
+      color: white;
       height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
+      position: relative;
+      overflow: hidden;
     }
 
-    .brand {
+    .stars {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background: transparent url('https://www.transparenttextures.com/patterns/stardust.png') repeat;
+      animation: twinkle 100s linear infinite;
+      z-index: 0;
+    }
+
+    @keyframes twinkle {
+      from { background-position: 0 0; }
+      to { background-position: 10000px 5000px; }
+    }
+
+    #brand {
       position: absolute;
       top: 20px;
       left: 30px;
-      font-size: 24px;
-      font-weight: bold;
-      color: #00ffff;
-      text-shadow: 0 0 8px #00ffff, 0 0 12px #00ffff;
-    }
-
-    .title {
       font-size: 1.5rem;
-      margin-bottom: 20px;
-      text-shadow: 0 0 6px rgba(255, 255, 255, 0.4);
-    }
-
-    .play-button {
-      width: 100px;
-      height: 100px;
-      border: 3px solid #00ffff;
-      border-radius: 50%;
-      background: transparent;
-      cursor: pointer;
-      position: relative;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 0 15px #00ffff;
-      transition: transform 0.2s ease;
-    }
-
-    .play-button:hover {
-      transform: scale(1.1);
-    }
-
-    .play-button::before {
-      content: '';
-      display: block;
-      margin-left: 5px;
-      width: 0;
-      height: 0;
-      border-left: 24px solid #00ffff;
-      border-top: 16px solid transparent;
-      border-bottom: 16px solid transparent;
+      font-weight: bold;
+      color: #0ff;
+      text-shadow: 0 0 5px #0ff, 0 0 10px #0ff;
+      z-index: 2;
     }
 
     #message {
-      margin-top: 30px;
-      font-size: 1.2rem;
-      padding: 0 20px;
+      margin-top: 20px;
+      font-size: 1.3rem;
       text-align: center;
+      text-shadow: 0 0 5px #0ff;
+      z-index: 2;
+    }
+
+    #playButton {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      background: #0ff;
+      box-shadow: 0 0 20px #0ff, 0 0 40px #0ff, 0 0 60px #0ff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: transform 0.2s ease-in-out;
+      z-index: 2;
+    }
+
+    #playButton:hover {
+      transform: scale(1.1);
+    }
+
+    #playIcon {
+      width: 0; 
+      height: 0; 
+      border-left: 30px solid #000;
+      border-top: 20px solid transparent;
+      border-bottom: 20px solid transparent;
     }
 
     audio {
       display: none;
     }
+
+    .bg-image {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: 0;
+      opacity: 0.15;
+      filter: blur(8px);
+    }
   </style>
 </head>
 <body>
-  <div class="brand">SOUNDKEEP</div>
-  <div class="title">來聽聽看我想對你說的話</div>
-  <button class="play-button" id="customPlay"></button>
-  <div id="message">載入中...</div>
-  <audio id="audio"></audio>
+  <div class="stars"></div>
+  <div id="brand">SOUNDKEEP</div>
+  <img id="bgImage" class="bg-image" style="display:none;" />
+
+  <div id="playButton">
+    <div id="playIcon"></div>
+  </div>
+
+  <p id="message">來聽聽看我想對你說的話</p>
+  <audio id="audio" controls></audio>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-    import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
+    import { getDatabase, ref as dbRef, get } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyCZ_s-tVGQtrS3Jts_ccXWBvsg0KTRljdY",
@@ -98,46 +122,46 @@
     };
 
     const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
+    const database = getDatabase(app);
 
     const urlParams = new URLSearchParams(window.location.search);
     const cardId = urlParams.get("id");
 
     const audio = document.getElementById("audio");
     const message = document.getElementById("message");
-    const playBtn = document.getElementById("customPlay");
+    const bgImage = document.getElementById("bgImage");
 
-    if (!cardId) {
-      alert("找不到卡片ID");
-    } else {
-      const cardRef = ref(db, "cards/" + cardId);
-      get(cardRef).then((snapshot) => {
-        if (snapshot.exists()) {
-          const data = snapshot.val();
-          message.innerText = data.blessingMessage || "（沒有祝福語）";
-          audio.src = data.audioURL;
+    async function loadCard() {
+      if (!cardId) {
+        message.textContent = "卡片 ID 不正確";
+        return;
+      }
 
-          if (data.bgImageURL && data.bgImageURL !== "") {
-            document.body.style.backgroundImage = `url('${data.bgImageURL}')`;
-            document.body.style.backgroundSize = 'cover';
-            document.body.style.backgroundPosition = 'center';
-          }
+      const snapshot = await get(dbRef(database, `cards/${cardId}`));
+      if (!snapshot.exists()) {
+        message.textContent = "找不到卡片內容";
+        return;
+      }
 
-          playBtn.addEventListener("click", () => {
-            if (audio.paused) {
-              audio.play();
-            } else {
-              audio.pause();
-            }
-          });
-        } else {
-          message.innerText = "找不到卡片內容";
-        }
-      }).catch((err) => {
-        console.error(err);
-        message.innerText = "讀取資料錯誤";
-      });
+      const data = snapshot.val();
+      audio.src = data.audioURL;
+      message.textContent = data.blessingMessage || "來聽聽看我想對你說的話";
+
+      if (data.bgImageURL) {
+        bgImage.src = data.bgImageURL;
+        bgImage.style.display = 'block';
+      }
     }
+
+    document.getElementById("playButton").addEventListener("click", () => {
+      if (audio.paused) {
+        audio.play();
+      } else {
+        audio.pause();
+      }
+    });
+
+    loadCard();
   </script>
 </body>
 </html>
