@@ -29,8 +29,9 @@ form.addEventListener("submit", async (e) => {
   const audioFile = document.getElementById("audioFile").files[0];
   const blessingMessage = document.getElementById("blessingMessage").value.trim();
   const cardPassword = document.getElementById("cardPassword").value.trim();
+  const theme = document.getElementById("theme").value;  // 新增主題欄位
 
-  if (!audioFile || !blessingMessage || !cardPassword) {
+  if (!audioFile || !blessingMessage || !cardPassword || !theme) {
     alert("請完整填寫表單");
     return;
   }
@@ -55,7 +56,8 @@ form.addEventListener("submit", async (e) => {
       audioURL: audioURL,
       blessingMessage: blessingMessage,
       password: cardPassword,
-      editTimes: 0  // 修改次數，初始為0
+      theme: theme,          // 儲存主題
+      editTimes: 0           // 修改次數，初始為0
     });
     console.log("資料庫儲存完成");
 
