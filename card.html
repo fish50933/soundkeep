@@ -2,101 +2,95 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8" />
-  <title>聲趣 SoundKeep｜語音卡片</title>
+  <title>聲趣 SoundKeep｜卡片展示</title>
+  <script type="module" src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+  <script type="module" src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js"></script>
   <style>
-    body {
+    html, body {
       margin: 0;
-      font-family: Arial, sans-serif;
-      background: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%);
+      padding: 0;
+      height: 100%;
+      font-family: 'Arial', sans-serif;
       overflow: hidden;
-      min-height: 100vh;
     }
 
-    /* 流動星星動畫 */
-    .stars {
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #000;
+      color: white;
+    }
+
+    #background {
+      position: absolute;
+      top: 0; left: 0;
       width: 100%;
       height: 100%;
-      background: transparent url('https://i.imgur.com/NM4Hjwr.png') repeat top center;
-      animation: moveStars 60s linear infinite;
-      position: fixed;
-      top: 0;
-      left: 0;
-      z-index: 0;
+      background: url('https://images.unsplash.com/photo-1503264116251-35a269479413?ixlib=rb-4.0.3&auto=format&fit=crop&w=1280&q=80') no-repeat center center;
+      background-size: cover;
+      z-index: -1;
     }
 
-    @keyframes moveStars {
-      from { background-position: 0 0; }
-      to { background-position: 0 -2000px; }
-    }
-
-    .header {
+    .logo {
       position: absolute;
       top: 20px;
       left: 20px;
-      color: white;
       font-size: 20px;
-      z-index: 2;
+      font-weight: bold;
+      color: white;
+      background-color: rgba(0, 0, 0, 0.4);
+      padding: 8px 16px;
+      border-radius: 10px;
     }
 
     .card-container {
-      position: relative;
-      z-index: 2;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-    }
-
-    .card {
-      background-size: contain;
-      background-repeat: no-repeat;
-      background-position: center;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      padding: 20px;
-      box-sizing: border-box;
-      aspect-ratio: attr(data-ratio);
-      max-width: 90vw;
-      max-height: 80vh;
-    }
-
-    .card-content {
-      background-color: rgba(255, 255, 255, 0.85);
-      padding: 15px;
-      border-radius: 12px;
       text-align: center;
       max-width: 90%;
     }
 
-    .card-content audio {
-      width: 100%;
-      margin-top: 10px;
+    .blessing {
+      font-size: 22px;
+      margin-bottom: 30px;
+      background: rgba(0, 0, 0, 0.5);
+      padding: 20px;
+      border-radius: 16px;
     }
 
-    .card-content .message {
-      margin-top: 10px;
-      font-size: 16px;
-      color: #333;
+    .play-button {
+      background-color: white;
+      color: black;
+      font-size: 32px;
+      padding: 20px 40px;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    .play-button:hover {
+      background-color: #ddd;
+    }
+
+    audio {
+      display: none;
     }
   </style>
 </head>
 <body>
-  <div class="stars"></div>
-  <div class="header">聲趣 SoundKeep</div>
+
+  <div id="background"></div>
+  <div class="logo">聲趣 SoundKeep</div>
+
   <div class="card-container">
-    <div id="card" class="card" data-ratio="3/4">
-      <div class="card-content">
-        <audio controls id="audioPlayer"></audio>
-        <div class="message" id="messageText">載入中...</div>
-      </div>
-    </div>
+    <div id="blessingText" class="blessing">載入中...</div>
+    <button id="playButton" class="play-button">▶ 播放</button>
+    <audio id="audioPlayer" controls></audio>
   </div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-    import { getDatabase, ref, get, child } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
+    import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyCZ_s-tVGQtrS3Jts_ccXWBvsg0KTRljdY",
@@ -109,41 +103,40 @@
     };
 
     const app = initializeApp(firebaseConfig);
-    const database = getDatabase(app);
+    const db = getDatabase(app);
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const cardId = urlParams.get("id");
+    const params = new URLSearchParams(window.location.search);
+    const cardId = params.get("id");
 
-    const audioPlayer = document.getElementById("audioPlayer");
-    const messageText = document.getElementById("messageText");
-    const card = document.getElementById("card");
+    const blessingEl = document.getElementById("blessingText");
+    const audioEl = document.getElementById("audioPlayer");
+    const backgroundEl = document.getElementById("background");
 
     if (!cardId) {
-      messageText.textContent = "未提供卡片 ID。";
+      blessingEl.textContent = "錯誤：未提供卡片 ID。";
     } else {
-      const dbRef = ref(database);
-      get(child(dbRef, `cards/${cardId}`)).then((snapshot) => {
+      const cardRef = ref(db, `cards/${cardId}`);
+      get(cardRef).then(snapshot => {
         if (snapshot.exists()) {
           const data = snapshot.val();
-          audioPlayer.src = data.audioURL;
-          messageText.textContent = data.blessingMessage || "無祝福語";
+          blessingEl.textContent = data.blessingMessage || "沒有祝福語";
+          audioEl.src = data.audioURL;
 
-          if (data.cardImageURL) {
-            card.style.backgroundImage = `url('${data.cardImageURL}')`;
+          if (data.backgroundImageURL) {
+            backgroundEl.style.backgroundImage = `url('${data.backgroundImageURL}')`;
           }
 
-          if (data.cardRatio) {
-            card.setAttribute('data-ratio', data.cardRatio);
-            card.style.aspectRatio = data.cardRatio;
-          }
         } else {
-          messageText.textContent = "找不到卡片資料。";
+          blessingEl.textContent = "找不到這張卡片";
         }
-      }).catch((error) => {
-        console.error(error);
-        messageText.textContent = "讀取卡片時發生錯誤。";
+      }).catch(error => {
+        blessingEl.textContent = "讀取資料錯誤：" + error;
       });
     }
+
+    document.getElementById("playButton").addEventListener("click", () => {
+      audioEl.play();
+    });
   </script>
 </body>
 </html>
